@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Smart Tourist Safety Demo - HACKHIVE</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss/dist/tailwind.min.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+  <style>
+    #map { height: 300px; }
+    .news-ticker {
+      white-space: nowrap;
+      overflow: hidden;
+      box-sizing: border-box;
+    }
+    .news-ticker p {
+      display: inline-block;
+      padding-left: 100%;
+      animation: ticker 15s linear infinite;
+    }
+    @keyframes ticker {
+      0% { transform: translateX(0%); }
+      100% { transform: translateX(-100%); }
+    }
+    /* Chatbot styles */
+    #chatbot {
+      position:fixed;
+      bottom: 20px;
+      right: 20px;
+      width: 300px;
+      height: 300px;
+      background: white;
+      border: 2px solid #4f46e5;
+      border-radius: 12px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+      display: flex;
+      flex-direction: column;
+      font-size: 14px;
+    }
+    #chatHeader {
+      background: #4f46e5;
+      color: white;
+      padding: 8px;
+      font-weight: bold;
+      text-align: center;
+      cursor: pointer;
+    }
+    #chatMessages {
+      flex: 1;
+      padding: 8px;
+      overflow-y: auto;
+      max-height: 200px;
+    }
+    .msg { margin: 4px 0; padding: 6px 10px; border-radius: 10px; }
+    .user { background: #e0e7ff; align-self: flex-end; }
+    .bot { background: #f3f4f6; align-self: flex-start; }
+    #chatInput {
+      display: flex;
+      border-top: 1px solid #ddd;
+    }
+    #chatInput input {
+      flex: 1;
+      border: none;
+      padding: 6px;
+      border-radius: 0 0 0 10px;
+    }
+    #chatInput button {
+      background: #4f46e5;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 0 0 10px 0;
+      cursor: pointer;
+    }
+    #mode:hover{
+      background-color: #032b5a;
+    }
+    .ul-links{
+      display: flex;
+      gap: 2rem;
+      margin-bottom:-0.5%;
+    }
+    .nav{
+      border: 1px solid white;
+      background-color:#4f46e5 ;
+    }
+    .nav a{
+      text-decoration: none;
+      color: white;
+    }
+  </style>
+</head>
+<body class="bg-gray-50 font-sans">
+
+  <!-- 🔝 Live News Ticker -->
+  <div class="bg-yellow-400 text-black p-2 font-semibold news-ticker shadow">
+    <p>⚡ Live Update: Heavy rainfall alert in Himachal Pradesh | ⚠️ Beware of pickpockets near central market Mall Road | 🚨 Safety drill scheduled at City Square today.</p>
+  </div>
+
+  <!-- Header -->
+  <header class="bg-indigo-600 text-white p-2 text-center" style="display: flex; padding-left: 500px;padding-right: -50%;padding-left:500px;justify-content: center">
+    <div>
+    <h1 class="text-3xl font-bold">Smart Tourist Safety System</h1>
+    <p class="text-lg">By Team HACKHIVE | SIH 2025</p>
+    </div>
+   
+  </header>
+
+  <div>
+<nav class="nav">
+  <ul class="ul-links">
+    <li id="ul-links">
+      <a href="#"> Home</a>
+    </li>
+    <li id="ul-links">
+     <a href="#"> Tourist PLaces</a> 
+    </li>
+    <li id="ul-links">
+     <a href="#"> Geofencing Alert</a>
+    </li>
+    <li id="ul-links">
+      <div class="dropdown" style="margin-top: -5%;border: none;">
+  <button class="btn btn- dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" class="ul-links" style="color: white;">
+    SOS-Numbers
+  </button>
+  <ul class="dropdown-menu dropdown-menu-dark">
+    <li id="ul-links"><a class="dropdown-item active" href="#">police - 112</a></li>
+    <li id="ul-links"><a class="dropdown-item" href="#">Women Helpline - 1091</a></li>
+    <li id="ul-links"><a class="dropdown-item" href="#">Ambulance - 102</a></li>
+   
+    <li id="ul-links"><a class="dropdown-item" href="#">Disaster Management Services -  108</a></li>
+  </ul>
+</div>
+    </li>
+    <li>
+     <a href="#"> Cootact Us</a>
+    </li>
+    <li>
+     <a href="#"> Feedback</a>
+    </li>
+    <li>
+    <div class="dropdown" style="margin-top: -5%;border: none;">
+  <button class="btn btn- dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" class="ul-links" style="color: white;">
+    Languages
+  </button>
+  <ul class="dropdown-menu dropdown-menu-dark">
+    <li id="ul-links"><a class="dropdown-item active" href="#">English</a></li>
+    <li id="ul-links"><a class="dropdown-item" href="#">Hindi</a></li>
+    <li id="ul-links"><a class="dropdown-item" href="#">French</a></li>
+   
+    <li id="ul-links"><a class="dropdown-item" href="#">Spanish</a></li>
+  </li>
+  </ul>
+</div>
+
+  </ul>
+</nav>
+  </div>
+
+  <!-- Main Layout -->
+  <main class="p-6 grid md:grid-cols-3 gap-6">
+    
+    <!-- Left Section: Tourist Web Portal -->
+    <div class="md:col-span-2 space-y-6">
+      <section>
+        <h2 class="text-2xl font-semibold mb-4" id="web">Tourist Web Portal</h2>
+        <div id="map" style="border-radius: 10px;height: 350px;border: 1px solid darkslategray;"></div>
+        <div class="flex gap-3 mt-5">
+          <button onclick="addAlert('SOS triggered! Authorities notified.')" class="bg-red-600 text-white px-4 py-2 rounded-xl shadow">🚨 SOS</button>
+          <button onclick="document.getElementById('incidentInput').focus()" class="bg-blue-600 text-white px-4 py-2 rounded-xl shadow">📋 Report Incident</button>
+        </div>
+      </section>
+
+      <!-- 📝 Incident Input -->
+      <section>
+        <h2 class="text-2xl font-semibold mb-4" id="web-2">Report a New Incident</h2>
+        <div class="bg-white p-4 rounded-xl shadow flex gap-2">
+          <input id="incidentInput" type="text" placeholder="Describe the incident..." class="border p-2 flex-grow rounded-lg">
+          <button onclick="submitIncident()" class="bg-green-600 text-white px-4 py-2 rounded-lg">Submit</button>
+        </div>
+      </section>
+    </div>
+
+    <!-- Right Section: Alerts & Incidents -->
+    <aside class="space-y-6">
+      <!-- ⚠️ Alerts -->
+      <section class="bg-red-50 p-4 rounded-xl shadow"  style="border: 1px solid red;">
+        <h2 class="text-xl font-semibold mb-2">Active Alerts</h2>
+        <ul id="alertList" class="space-y-2">
+          <li class="p-2 border border-red-300 bg-white rounded-lg">⚠️ Flood warning issued for riverside area</li>
+        </ul>
+      </section>
+
+      <!-- 📋 Admin Dashboard -->
+      <section class="bg-white p-4 rounded-xl shadow" style="border: 1px solid darkslategray;">
+        <h2 class="text-xl font-semibold mb-2">Recent Incidents</h2>
+        <ul id="incidentList" class="space-y-2">
+          <li class="p-2 border rounded-lg flex justify-between">
+            <span>Clouds Bursts in Himachal Pradesh without any alert of weather forecast</span>
+            <span class="text-sm text-gray-600">high</span>
+          </li>
+          <li class="p-2 border rounded-lg flex justify-between">
+            <span>Land Slide in Vaishno Devi</span>
+            <span class="text-sm text-gray-600">high</span>
+          </li>
+        </ul>
+      </section>
+
+      <!-- 📋 All Incidents -->
+      <section class="bg-gray-100 p-4 rounded-xl shadow" style="border: 1px solid darkslategray;">
+        <h2 class="text-xl font-semibold mb-2">All Reported Incidents</h2>
+        <div id="allIncidents" class="space-y-2 bg-white p-2 rounded-lg">
+          <p>No new incidents reported yet.</p>
+        </div>
+      </section>
+    </aside>
+  </main>
+
+  <!-- Tech Stack -->
+  <!-- <section class="p-6">
+    <h2 class="text-2xl font-semibold mb-4">Technology Stack</h2>
+    <p>
+      <strong>Frontend:</strong> React.js, Tailwind, Leaflet.js <br>
+      <strong>Backend:</strong> Node.js, Express.js, MongoDB, Firebase <br>
+      <strong>AI/ML:</strong> ChatGPT, TensorFlow/PyTorch <br>
+      <strong>Blockchain:</strong> SHA-256, Polygon testnet <br>
+      <strong>Notifications:</strong> Twilio, SendGrid, Web Push
+    </p>
+  </section> -->
+
+  <footer class="bg-indigo-600 text-white text-center p-4">
+    © 2025 HACKHIVE – Smart India Hackathon
+  </footer>
+
+  <!-- 🔹 AI Chatbot -->
+  <div id="chatbot">
+    <div id="chatHeader" onclick="toggleChat()">🤖 Tourist Safety Assistant</div>
+    <div id="chatMessages"></div>
+    <div id="chatInput">
+      <input type="text" id="chatText" placeholder="Ask something..." />
+      <button onclick="sendMessage()">Send</button>
+    </div>
+  </div>
+
+  <!-- Leaflet & Chatbot Script -->
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script>
+    // Map Initialization
+    var map = L.map('map').setView([28.75, 77.49], 4.5);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+    L.circle([28.75, 77.49], {  }).addTo(map);
+    // L.marker([28.75, 77.49]).addTo(map).bindPopup("Tourist Current Location");
+
+
+   
+
+// threatZones.forEach(zone=> {
+//   L.circle([zone.lat, zone.lng], {
+//     radius: zone.r,
+//     color: 'red',
+//     fillColor: 'red',
+//     fillOpacity: 0.3
+//   }).addTo(map).bindPopup("⚠️ " + zone.label);
+// });
+
+
+
+map.locate({setView: true, watch: true});
+map.on('locationfound', function(e){
+  L.marker(e.latlng).addTo(map).bindPopup("📍 You are here").openPopup();
+  
+});
+
+map.locate({ setView: true, maxZoom: 16 });
+
+map.on("locationfound", function(e) {
+  console.log("Your coordinates:", e.latlng); 
+  // Example: {lat: 26.85, lng: 80.95}
+  
+  // Place marker at your location
+  L.marker(e.latlng).addTo(map)
+    .bindPopup("📍 You are here").openPopup();
+});
+
+map.on("locationerror", function() {
+  alert("⚠️ Unable to access your location. Please enable GPS.");
+});
+
+map.on("locationfound", function(e) {
+  L.circle(e.latlng, { radius: e.accuracy }).addTo(map);
+});
+
+
+
+// Safe Zones
+const safeZones = [
+  { lat: 28.75, lng:77.49, radius: 500, label: "✅ Tourist Friendly Zone" },
+  // { lat:28.7537, lng:77.49, radius: 500, label: "✅ Near Hospital Safe Area" }
+  { lat: 28.752896602450864, lng:77.49755500137772, radius: 350, label: "✅ Womens Safe Zone" }
+];
+
+safeZones.forEach(zone => {
+  L.circle([zone.lat, zone.lng], {
+    radius: zone.radius,
+    color: "green",
+    fillColor: "green",
+    fillOpacity: 0.2
+  }).addTo(map).bindPopup(zone.label);
+});
+
+
+
+// Threat Zones
+const threatZones = [
+  { lat: 28.758312425088725, lng: 77.49732299029793, radius: 400, label: "⚠️ Accident-Prone Area" },
+  { lat: 28.757817699000842, lng: 77.50663427889313, radius: 350, label: "⚠️ Unsafe After Dark" }
+];
+
+threatZones.forEach(zone => {
+  L.circle([zone.lat, zone.lng], {
+    radius: zone.radius,
+    color: "red",
+    fillColor: "red",
+    fillOpacity: 0.3
+  }).addTo(map).bindPopup(zone.label);
+});
+
+// Hospital Icon
+var hospitalIcon = L.icon({
+  iconUrl: "https://cdn-icons-png.flaticon.com/512/2967/2967350.png",
+  iconSize: [28, 28]
+});
+L.marker([28.752621954629774, 77.49686567366089], { icon: hospitalIcon }).addTo(map)
+  .bindPopup("🏥 Civil Hospital");
+
+// Police Station
+var policeIcon = L.icon({
+  iconUrl: "https://cdn-icons-png.flaticon.com/512/2206/2206368.png",
+  iconSize: [28, 28]
+});
+L.marker([28.75321076973039, 77.49560101211037], { icon: policeIcon }).addTo(map)
+  .bindPopup("🚓 Hazratganj Police Station");
+
+// Tourist Attraction
+var monumentIcon = L.icon({
+  iconUrl: "https://cdn-icons-png.flaticon.com/512/1483/1483336.png",
+  iconSize: [28, 28]
+});
+L.marker([28.758579563947364, 77.50074817120995], { icon: monumentIcon }).addTo(map)
+  .bindPopup("🏰 Bara Imambara (Tourist Attraction)");
+
+
+
+    // Incident submission
+    function submitIncident() {
+      const input = document.getElementById("incidentInput");
+      const text = input.value.trim();
+      if (!text) return alert("Please describe the incident.");
+      input.value = "";
+
+      // Add to incident lists
+      const list = document.getElementById("incidentList");
+      const item = document.createElement("li");
+      item.className = "p-2 border rounded-lg flex justify-between";
+      item.innerHTML = `<span>${text}</span><span class="text-sm text-gray-600">New</span>`;
+      list.appendChild(item);
+
+      const all = document.getElementById("allIncidents");
+      all.innerHTML = ""; // clear placeholder
+      const allItem = document.createElement("div");
+      allItem.className = "p-2 border rounded-lg";
+      allItem.innerText = text;
+      all.appendChild(allItem);
+
+      addAlert("🚨 New incident reported: " + text);
+    }
+
+    // Alerts
+    function addAlert(message) {
+      const alertList = document.getElementById("alertList");
+      const item = document.createElement("li");
+      item.className = "p-2 border border-red-300 bg-white rounded-lg";
+      item.innerText = message;
+      alertList.appendChild(item);
+    }
+
+    // Chatbot Logic
+    function sendMessage() {
+      const input = document.getElementById("chatText");
+      const msg = input.value.trim();
+      if (!msg) return;
+      input.value = "";
+
+      addChatMessage("user", msg);
+
+      // Fake AI responses
+      let reply = "Sorry, I didn't understand.";
+      if (msg.toLowerCase().includes("hospital")) reply = "Nearest hospital is 2 km away at Civil Lines.";
+      else if (msg.toLowerCase().includes("safe zone")) reply = "You are currently inside the muradnagar Safe Zone.";
+      else if (msg.toLowerCase().includes("police")) reply = "Nearest police station is Hazratganj Police Station (1.5 km).";
+      else if (msg.toLowerCase().includes("hello")) reply = "Hello! I'm your Tourist Safety Assistant. How can I help?";
+      
+      setTimeout(() => addChatMessage("bot", reply), 800);
+    }
+
+    function addChatMessage(sender, text) {
+      const msgBox = document.getElementById("chatMessages");
+      const msg = document.createElement("div");
+      msg.className = `msg ${sender}`;
+      msg.innerText = text;
+      msgBox.appendChild(msg);
+      msgBox.scrollTop = msgBox.scrollHeight;
+    }
+
+    function toggleChat() {
+      const bot = document.getElementById("chatbot");
+      if (bot.style.height === "30px") {
+        bot.style.height = "300px";
+      } else {
+        bot.style.height = "30px";
+      }
+    }
+    
+    let modebtn=document.querySelector("#mode");
+    let currmode="light";
+    let changemode=document.querySelector(".web-in");
+    modebtn.addEventListener("click",()=>{
+        if(currmode==="light"){
+            currmode="dark";
+            document.querySelector("body").style.backgroundColor="#032b5a";
+             document.querySelector("#web").style.color="white";
+             document.querySelector("#web-2").style.color="white";
+              changemode.innerText="Light Mode";
+              document.querySelectorAll(".ul-links").style.color="white";
+        }
+        else{
+            currmode="light";
+            document.querySelector("body").style.backgroundColor="white";
+            document.querySelector("#web").style.color="black";
+            document.querySelector("#web-2").style.color="black";
+            changemode.innerText="Dark Mode";
+            document.querySelectorALL(".ul-links").style.color="black";
+
+        }
+    });
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+</body>
+</html>
